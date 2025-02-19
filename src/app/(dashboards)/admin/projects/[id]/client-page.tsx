@@ -5,8 +5,26 @@ import { useRouter, useParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 
+interface Project {
+  id: number;
+  name: string;
+  client: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  progress: number;
+  description: string;
+  totalHours: number;
+  totalUsers: number;
+  budget: string;
+}
+
+interface Projects {
+  [key: string]: Project;
+}
+
 // Mock data for all projects
-const mockProjects = {
+const mockProjects: Projects = {
   "1": {
     id: 1,
     name: "مشروع 1",
@@ -80,7 +98,10 @@ export default function ClientPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const params = useParams()
-  const [projectDetails, setProjectDetails] = useState(mockProjects[params.id as string])
+  const projectId = params?.id?.toString() || ""
+  const [projectDetails, setProjectDetails] = useState<Project | undefined>(
+    mockProjects[projectId]
+  )
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -92,8 +113,10 @@ export default function ClientPage() {
 
   useEffect(() => {
     // Update project details when params change
-    setProjectDetails(mockProjects[params.id as string])
-  }, [params.id])
+    if (projectId) {
+      setProjectDetails(mockProjects[projectId])
+    }
+  }, [projectId])
 
   const handleSignOut = async () => {
     await signOut({ redirect: true, callbackUrl: "/auth/login" })
@@ -266,21 +289,21 @@ export default function ClientPage() {
                   {mockTimeLogs.map((log) => (
                     <tr key={log.id}>
                       <td className="whitespace-nowrap px-6 py-4">
-                        <div className="text-sm font-medium text-gray-900">{log.user}</div>
+                        <div className="text-sm text-gray-900">{log.user}</div>
                       </td>
                       <td className="whitespace-nowrap px-6 py-4">
-                        <div className="text-sm text-gray-500">{log.date}</div>
+                        <div className="text-sm text-gray-900">{log.date}</div>
                       </td>
                       <td className="whitespace-nowrap px-6 py-4">
                         <div className="text-sm text-gray-900">{log.hours}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-500">{log.description}</div>
+                        <div className="text-sm text-gray-900">{log.description}</div>
                       </td>
                       <td className="whitespace-nowrap px-6 py-4">
                         <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                          log.status === "معتمد" 
-                            ? "bg-green-100 text-green-800" 
+                          log.status === "معتمد"
+                            ? "bg-green-100 text-green-800"
                             : "bg-yellow-100 text-yellow-800"
                         }`}>
                           {log.status}

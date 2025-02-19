@@ -1,18 +1,18 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '../../auth/[...nextauth]/auth.config'
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
-) {
+): Promise<Response> {
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user) {
-      return new NextResponse(
-        JSON.stringify({ error: 'Not authenticated' }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      return Response.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
       )
     }
 
@@ -46,9 +46,9 @@ export async function GET(
     })
 
     if (!project) {
-      return new NextResponse(
-        JSON.stringify({ error: 'Project not found' }),
-        { status: 404, headers: { 'Content-Type': 'application/json' } }
+      return Response.json(
+        { error: 'Project not found' },
+        { status: 404 }
       )
     }
 
@@ -62,18 +62,15 @@ export async function GET(
       totalUsers: project.users.length,
     }
 
-    return new NextResponse(
-      JSON.stringify(response),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    )
+    return Response.json(response)
   } catch (error) {
     console.error('Error fetching project details:', error)
-    return new NextResponse(
-      JSON.stringify({ 
+    return Response.json(
+      { 
         error: 'Failed to fetch project details',
         details: error instanceof Error ? error.message : String(error)
-      }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      },
+      { status: 500 }
     )
   }
 } 
